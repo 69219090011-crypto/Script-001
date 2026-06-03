@@ -1,0 +1,119 @@
+-- ============================================
+-- VIP God Mode GUI Script
+-- เนเธชเนเนเธ: StarterPlayerScripts > LocalScript
+-- ============================================
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ========== เธชเธฃเนเธฒเธ GUI ==========
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "VIP_GUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 160)
+frame.Position = UDim2.new(0, 20, 0.5, -80)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Text = "โญ VIP Panel"
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = frame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.Parent = title
+
+-- ========== เธเธธเนเธก God Mode ==========
+local godBtn = Instance.new("TextButton")
+godBtn.Text = "๐ก๏ธ God Mode: OFF"
+godBtn.Size = UDim2.new(0.9, 0, 0, 40)
+godBtn.Position = UDim2.new(0.05, 0, 0, 45)
+godBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+godBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+godBtn.Font = Enum.Font.GothamBold
+godBtn.TextSize = 14
+godBtn.Parent = frame
+
+Instance.new("UICorner", godBtn).CornerRadius = UDim.new(0, 8)
+
+-- ========== เธเธธเนเธก Speed ==========
+local speedBtn = Instance.new("TextButton")
+speedBtn.Text = "โก Speed Boost: OFF"
+speedBtn.Size = UDim2.new(0.9, 0, 0, 40)
+speedBtn.Position = UDim2.new(0.05, 0, 0, 100)
+speedBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBtn.Font = Enum.Font.GothamBold
+speedBtn.TextSize = 14
+speedBtn.Parent = frame
+
+Instance.new("UICorner", speedBtn).CornerRadius = UDim.new(0, 8)
+
+-- ========== Logic ==========
+local godModeOn = false
+local speedOn = false
+local godConnection
+
+-- God Mode
+local function applyGodMode(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.MaxHealth = math.huge
+    humanoid.Health = math.huge
+    godConnection = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+        if humanoid.Health < humanoid.MaxHealth then
+            humanoid.Health = humanoid.MaxHealth
+        end
+    end)
+end
+
+godBtn.MouseButton1Click:Connect(function()
+    godModeOn = not godModeOn
+    if godModeOn then
+        godBtn.Text = "๐ก๏ธ God Mode: ON"
+        godBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+        local char = player.Character or player.CharacterAdded:Wait()
+        applyGodMode(char)
+        player.CharacterAdded:Connect(applyGodMode)
+    else
+        godBtn.Text = "๐ก๏ธ God Mode: OFF"
+        godBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        if godConnection then godConnection:Disconnect() end
+        local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.MaxHealth = 100
+            humanoid.Health = 100
+        end
+    end
+end)
+
+-- Speed Boost
+speedBtn.MouseButton1Click:Connect(function()
+    speedOn = not speedOn
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = speedOn and 50 or 16
+    end
+    if speedOn then
+        speedBtn.Text = "โก Speed Boost: ON"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+    else
+        speedBtn.Text = "โก Speed Boost: OFF"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+    end
+end)
+
+print("[VIP GUI] เนเธซเธฅเธ”เธชเธณเน€เธฃเนเธ!")
