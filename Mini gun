@@ -1,0 +1,45 @@
+local tool = script.Parent
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local firing = false
+
+-- ยิงกระสุน
+local function shoot()
+	local char = player.Character
+	if not char then return end
+	
+	local origin = char.Head.Position
+	local direction = (mouse.Hit.Position - origin).Unit * 500
+	
+	local ray = Ray.new(origin, direction)
+	local hit, pos = workspace:FindPartOnRay(ray, char)
+	
+	if hit and hit.Parent:FindFirstChild("Humanoid") then
+		hit.Parent.Humanoid:TakeDamage(5)
+	end
+	
+	-- เอฟเฟคกระสุน
+	local part = Instance.new("Part")
+	part.Size = Vector3.new(0.2,0.2,2)
+	part.CFrame = CFrame.new(origin, pos)
+	part.Anchored = true
+	part.CanCollide = false
+	part.BrickColor = BrickColor.new("Bright yellow")
+	part.Parent = workspace
+	
+	game.Debris:AddItem(part, 0.1)
+end
+
+-- กดค้างยิง
+tool.Activated:Connect(function()
+	firing = true
+	while firing do
+		shoot()
+		task.wait(0.05) -- ปรับความรัวตรงนี้
+	end
+end)
+
+tool.Deactivated:Connect(function()
+	firing = false
+end)
