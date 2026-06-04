@@ -1,0 +1,50 @@
+
+-- Crear la GUI
+local screenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+screenGui.Name = "KillGui"
+
+-- Frame negro con texto blanco
+local blackFrame = Instance.new("Frame", screenGui)
+blackFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+blackFrame.Size = UDim2.new(0, 200, 0, 50)
+blackFrame.Position = UDim2.new(0.5, -100, 0.1, 0)
+
+local label = Instance.new("TextLabel", blackFrame)
+label.Text = "Kill Player Gui"
+label.TextColor3 = Color3.new(1, 1, 1)
+label.BackgroundTransparency = 1
+label.Size = UDim2.new(1, 0, 1, 0)
+label.Font = Enum.Font.SourceSansBold
+label.TextScaled = true
+
+-- Segundo frame (gris/plomo)
+local grayFrame = Instance.new("Frame", screenGui)
+grayFrame.BackgroundColor3 = Color3.fromRGB(128, 128, 128)
+grayFrame.Size = UDim2.new(0, 200, 0, 100)
+grayFrame.Position = UDim2.new(0.5, -100, 0.25, 0)
+
+-- Caja de texto para nombre del jugador
+local playerNameBox = Instance.new("TextBox", grayFrame)
+playerNameBox.PlaceholderText = "Player Name"
+playerNameBox.Size = UDim2.new(1, 0, 0.4, 0)
+playerNameBox.Position = UDim2.new(0, 0, 0, 0)
+playerNameBox.TextScaled = true
+
+-- Botón para hacer "kill"
+local killButton = Instance.new("TextButton", grayFrame)
+killButton.Text = "Kill Player"
+killButton.Size = UDim2.new(1, 0, 0.4, 0)
+killButton.Position = UDim2.new(0, 0, 0.5, 0)
+killButton.TextScaled = true
+killButton.Font = Enum.Font.SourceSansBold
+killButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+killButton.TextColor3 = Color3.new(1, 1, 1)
+
+-- Función para "matar" al jugador
+killButton.MouseButton1Click:Connect(function()
+	local name = playerNameBox.Text
+	local player = game.Players:FindFirstChild(name)
+	if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.Health = 0
+	end
+end)
