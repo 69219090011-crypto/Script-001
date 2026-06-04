@@ -1,0 +1,51 @@
+local player = game.Players.LocalPlayer
+
+-- สร้าง GUI
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0, 50, 0, 200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Parent = gui
+
+-- ลากได้
+frame.Active = true
+frame.Draggable = true
+
+-- ช่องใส่ความเร็ว
+local textbox = Instance.new("TextBox")
+textbox.Size = UDim2.new(1, -20, 0, 30)
+textbox.Position = UDim2.new(0, 10, 0, 10)
+textbox.Text = "16"
+textbox.Parent = frame
+
+-- ปุ่มเปิดปิด
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -20, 0, 40)
+button.Position = UDim2.new(0, 10, 0, 60)
+button.Text = "OFF"
+button.Parent = frame
+
+local enabled = false
+
+local function getHumanoid()
+	local char = player.Character or player.CharacterAdded:Wait()
+	return char:WaitForChild("Humanoid")
+end
+
+button.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	
+	if enabled then
+		button.Text = "ON"
+		local speed = tonumber(textbox.Text)
+		if speed then
+			getHumanoid().WalkSpeed = speed
+		end
+	else
+		button.Text = "OFF"
+		getHumanoid().WalkSpeed = 16
+	end
+end)
