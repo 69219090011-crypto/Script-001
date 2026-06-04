@@ -1,0 +1,22 @@
+local tool = script.Parent
+local player = game.Players.LocalPlayer
+
+local anim
+
+tool.Equipped:Connect(function()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+
+	-- สร้าง Animation
+	local animation = Instance.new("Animation")
+	animation.AnimationId = "rbxassetid://507770239" -- ท่ายกแขน (พื้นฐาน Roblox)
+
+	anim = hum:LoadAnimation(animation)
+	anim:Play()
+end)
+
+tool.Unequipped:Connect(function()
+	if anim then
+		anim:Stop()
+	end
+end)
