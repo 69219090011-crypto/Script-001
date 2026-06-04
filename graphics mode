@@ -1,0 +1,73 @@
+local player = game.Players.LocalPlayer
+
+-- สร้าง GUI หลัก (ไม่รีเซ็ตตอนตาย)
+local gui = Instance.new("ScreenGui")
+gui.Name = "FPSBooster"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- ปุ่มไอคอน (เปิด/ปิดเมนู)
+local icon = Instance.new("TextButton")
+icon.Size = UDim2.new(0,50,0,50)
+icon.Position = UDim2.new(0,20,0,200)
+icon.Text = "⚡"
+icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+icon.Parent = gui
+
+-- เมนูหลัก
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,200,0,120)
+frame.Position = UDim2.new(0,80,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Visible = false
+frame.Parent = gui
+
+-- ลากได้
+frame.Active = true
+frame.Draggable = true
+
+-- ปุ่มลดกราฟฟิก
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1,-20,0,40)
+button.Position = UDim2.new(0,10,0,40)
+button.Text = "BOOST OFF"
+button.Parent = frame
+
+local enabled = false
+
+-- ฟังก์ชันลดกราฟฟิกโคตรแรง
+local function boostFPS()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.Material = Enum.Material.SmoothPlastic
+			v.Reflectance = 0
+		elseif v:IsA("Decal") or v:IsA("Texture") then
+			v:Destroy()
+		elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+			v.Enabled = false
+		elseif v:IsA("Explosion") then
+			v:Destroy()
+		end
+	end
+
+	-- ปิดเอฟเฟคแสง
+	game.Lighting.GlobalShadows = false
+	game.Lighting.FogEnd = 100000
+end
+
+-- กดไอคอน = เปิด/ปิดเมนู
+icon.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
+
+-- ปุ่มเปิด/ปิด FPS Boost
+button.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	
+	if enabled then
+		button.Text = "BOOST ON"
+		boostFPS()
+	else
+		button.Text = "BOOST OFF"
+	end
+end)
