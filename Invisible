@@ -1,0 +1,45 @@
+local player = game.Players.LocalPlayer
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(0,120,0,50)
+btn.Position = UDim2.new(0,20,0,200)
+btn.Text = "INVIS OFF"
+btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+btn.Parent = gui
+
+btn.Active = true
+btn.Draggable = true
+
+-- ===== ระบบหายตัว =====
+local invisible = false
+
+local function setInvisible(state)
+	local char = player.Character
+	if not char then return end
+	
+	for _,v in pairs(char:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.Transparency = state and 1 or 0
+			v.CanCollide = not state
+		elseif v:IsA("Decal") then
+			v.Transparency = state and 1 or 0
+		end
+	end
+end
+
+btn.MouseButton1Click:Connect(function()
+	invisible = not invisible
+	btn.Text = invisible and "INVIS ON" or "INVIS OFF"
+	setInvisible(invisible)
+end)
+
+-- กันรีตอนตาย
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	setInvisible(invisible)
+end)
