@@ -1,0 +1,132 @@
+local DataStoreService = game:GetService("DataStoreService")
+local Players = game:GetService("Players")
+
+local ds = DataStoreService:GetDataStore("MoneyData")
+
+-- ===== SETTINGS =====
+local AUTO_INCOME = 100      -- เงิน/วินาที
+local BONUS_JOIN = 500       -- โบนัสตอนเข้า
+local MAX_ADD = 1000000      -- กันใส่เลขเว่อ
+
+-- ===== PLAYER JOIN =====
+Players.PlayerAdded:Connect(function(player)
+	
+	-- leaderstats
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	stats.Parent = player
+	
+	local money = Instance.new("IntValue")
+	money.Name = "Money"
+	money.Parent = stats
+	
+	local level = Instance.new("IntValue")
+	level.Name = "Level"
+	level.Parent = stats
+	
+	-- โหลดข้อมูล
+	local data
+	pcall(function()
+		data = ds:GetAsync(player.UserId)
+	end)
+	
+	if data then
+		money.Value = data.Money or 0
+		level.Value = data.Level or 1
+	else
+		money.Value = BONUS_JOIN
+		level.Value = 1
+	end
+	
+	-- ===== AUTO FARM =====
+	task.spawn(function()
+		while player.Parent do
+			task.wait(1)
+			money.Value += AUTO_INCOME * level.Value
+		end
+	end)
+	
+	-- ===== GUI =====
+	local gui = Instance.new("ScreenGui")
+	gui.ResetOnSpawn = false
+	gui.Parent = player:WaitForChild("PlayerGui")
+	
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0,260,0,200)
+	frame.Position = UDim2.new(0,20,0,200)
+	frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	frame.Parent = gui
+	frame.Active = true
+	frame.Draggable = true
+	
+	local box = Instance.new("TextBox")
+	box.Size = UDim2.new(1,-20,0,40)
+	box.Position = UDim2.new(0,10,0,10)
+	box.PlaceholderText = "ใส่จำนวนเงิน"
+	box.Parent = frame
+	
+	local add = Instance.new("TextButton")
+	add.Size = UDim2.new(1,-20,0,30)
+	add.Position = UDim2.new(0,10,0,60)
+	add.Text = "ADD"
+	add.Parent = frame
+	
+	local x10 = Instance.new("TextButton")
+	x10.Size = UDim2.new(0.45,-5,0,30)
+	x10.Position = UDim2.new(0,10,0,100)
+	x10.Text = "x10"
+	x10.Parent = frame
+	
+	local x100 = Instance.new("TextButton")
+	x100.Size = UDim2.new(0.45,-5,0,30)
+	x100.Position = UDim2.new(0.55,0,0,100)
+	x100.Text = "x100"
+	x100.Parent = frame
+	
+	local levelUp = Instance.new("TextButton")
+	levelUp.Size = UDim2.new(1,-20,0,30)
+	levelUp.Position = UDim2.new(0,10,0,140)
+	levelUp.Text = "LEVEL UP (1000$)"
+	levelUp.Parent = frame
+	
+	-- ===== BUTTONS =====
+	add.MouseButton1Click:Connect(function()
+		local amount = tonumber(box.Text)
+		if amount and amount <= MAX_ADD then
+			money.Value += amount
+		end
+	end)
+	
+	x10.MouseButton1Click:Connect(function()
+		money.Value *= 10
+	end)
+	
+	x100.MouseButton1Click:Connect(function()
+		money.Value *= 100
+	end)
+	
+	levelUp.MouseButton1Click:Connect(function()
+		if money.Value >= 1000 then
+			money.Value -= 1000
+			level.Value += 1
+		end
+	end)
+end)
+
+-- ===== SAVE =====
+Players.PlayerRemoving:Connect(function(player)
+	local stats = player:FindFirstChild("leaderstats")
+	if stats then
+		local money = stats:FindFirstChild("Money")
+		local level = stats:FindFirstChild("Level")
+		
+		if money and level then
+			pcall(function()
+				ds:SetAsync(player.UserId,{
+					Money = money.Value,
+					Level = level.Value
+				})
+			end)
+		end
+	end
+end)
