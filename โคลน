@@ -1,0 +1,120 @@
+local Players = game:GetService("Players")
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function(char)
+		
+		-- ===== GUI =====
+		local gui = Instance.new("ScreenGui")
+		gui.ResetOnSpawn = false
+		gui.Parent = player:WaitForChild("PlayerGui")
+		
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(0,250,0,180)
+		frame.Position = UDim2.new(0,20,0,200)
+		frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+		frame.Parent = gui
+		frame.Active = true
+		frame.Draggable = true
+		
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1,0,0,30)
+		label.Text = "Clones: 1"
+		label.BackgroundTransparency = 1
+		label.Parent = frame
+		
+		-- ===== Slider =====
+		local slider = Instance.new("Frame")
+		slider.Size = UDim2.new(1,-20,0,20)
+		slider.Position = UDim2.new(0,10,0,40)
+		slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
+		slider.Parent = frame
+		
+		local knob = Instance.new("Frame")
+		knob.Size = UDim2.new(0,20,1,0)
+		knob.Position = UDim2.new(0,0,0,0)
+		knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
+		knob.Parent = slider
+		
+		local cloneCount = 1
+		local dragging = false
+		
+		knob.InputBegan:Connect(function(input)
+			if input.UserInputType.Name == "MouseButton1" then
+				dragging = true
+			end
+		end)
+		
+		knob.InputEnded:Connect(function(input)
+			if input.UserInputType.Name == "MouseButton1" then
+				dragging = false
+			end
+		end)
+		
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			if dragging and input.UserInputType.Name == "MouseMovement" then
+				local x = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X,0,1)
+				knob.Position = UDim2.new(x, -10, 0, 0)
+				
+				cloneCount = math.floor(x * 10) + 1 -- 1-10 ตัว
+				label.Text = "Clones: "..cloneCount
+			end
+		end)
+		
+		-- ===== ปุ่ม =====
+		local spawnBtn = Instance.new("TextButton")
+		spawnBtn.Size = UDim2.new(1,-20,0,30)
+		spawnBtn.Position = UDim2.new(0,10,0,80)
+		spawnBtn.Text = "SPAWN"
+		spawnBtn.Parent = frame
+		
+		local clearBtn = Instance.new("TextButton")
+		clearBtn.Size = UDim2.new(1,-20,0,30)
+		clearBtn.Position = UDim2.new(0,10,0,120)
+		clearBtn.Text = "CLEAR"
+		clearBtn.Parent = frame
+		
+		local clones = {}
+		
+		-- ===== สร้างโคลน =====
+		spawnBtn.MouseButton1Click:Connect(function()
+			for _,c in pairs(clones) do
+				if c then c:Destroy() end
+			end
+			clones = {}
+			
+			for i=1,cloneCount do
+				local clone = char:Clone()
+				clone.Parent = workspace
+				table.insert(clones, clone)
+				
+				local root = clone:FindFirstChild("HumanoidRootPart")
+				local myRoot = char:FindFirstChild("HumanoidRootPart")
+				
+				if root and myRoot then
+					root.CFrame = myRoot.CFrame * CFrame.new(i*3,0,0)
+				end
+				
+				-- เดินตาม
+				task.spawn(function()
+					local hum = clone:FindFirstChildOfClass("Humanoid")
+					while clone.Parent and char.Parent do
+						task.wait(0.5)
+						local target = char:FindFirstChild("HumanoidRootPart")
+						if target and hum then
+							hum:MoveTo(target.Position + Vector3.new(math.random(-3,3),0,math.random(-3,3)))
+						end
+					end
+				end)
+			end
+		end)
+		
+		-- ลบโคลน
+		clearBtn.MouseButton1Click:Connect(function()
+			for _,c in pairs(clones) do
+				if c then c:Destroy() end
+			end
+			clones = {}
+		end)
+		
+	end)
+end)
