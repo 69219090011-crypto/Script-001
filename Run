@@ -6,73 +6,49 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,250,0,140)
+frame.Size = UDim2.new(0,220,0,120)
 frame.Position = UDim2.new(0,20,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.Parent = gui
 frame.Active = true
 frame.Draggable = true
 
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1,0,0,30)
-label.Text = "Speed: 16"
-label.BackgroundTransparency = 1
-label.Parent = frame
+-- ช่องใส่สปีด
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,10)
+box.PlaceholderText = "ใส่ความเร็ว (เช่น 50)"
+box.Parent = frame
 
--- ===== Slider =====
-local slider = Instance.new("Frame")
-slider.Size = UDim2.new(1,-20,0,20)
-slider.Position = UDim2.new(0,10,0,40)
-slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
-slider.Parent = frame
+-- ปุ่มใช้
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(1,-20,0,40)
+btn.Position = UDim2.new(0,10,0,60)
+btn.Text = "SET SPEED"
+btn.Parent = frame
 
-local knob = Instance.new("Frame")
-knob.Size = UDim2.new(0,20,1,0)
-knob.Position = UDim2.new(0,0,0,0)
-knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
-knob.Parent = slider
+local currentSpeed = 16
 
-local speed = 16
-local dragging = false
-
-knob.InputBegan:Connect(function(input)
-	if input.UserInputType.Name == "MouseButton1" then
-		dragging = true
-	end
-end)
-
-knob.InputEnded:Connect(function(input)
-	if input.UserInputType.Name == "MouseButton1" then
-		dragging = false
-	end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-	if dragging and input.UserInputType.Name == "MouseMovement" then
-		local x = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X,0,1)
-		knob.Position = UDim2.new(x, -10, 0, 0)
-		
-		speed = math.floor(x * 200) + 16 -- 16-216
-		label.Text = "Speed: "..speed
-		
-		local char = player.Character
-		if char and char:FindFirstChildOfClass("Humanoid") then
-			char:FindFirstChildOfClass("Humanoid").WalkSpeed = speed
-		end
-	end
-end)
-
--- ===== รีตอนเกิดใหม่ =====
+-- ===== ตั้งค่า =====
 local function applySpeed()
 	local char = player.Character
 	if char then
 		local hum = char:FindFirstChildOfClass("Humanoid")
 		if hum then
-			hum.WalkSpeed = speed
+			hum.WalkSpeed = currentSpeed
 		end
 	end
 end
 
+btn.MouseButton1Click:Connect(function()
+	local num = tonumber(box.Text)
+	if num then
+		currentSpeed = num
+		applySpeed()
+	end
+end)
+
+-- กันรีตอนตาย
 player.CharacterAdded:Connect(function()
 	task.wait(1)
 	applySpeed()
