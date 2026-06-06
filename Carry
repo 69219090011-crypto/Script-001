@@ -1,0 +1,73 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+-- TOOL
+local tool = Instance.new("Tool")
+tool.Name = "Gendong Player"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+local carrying = false
+local targetChar = nil
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Parent = player.PlayerGui
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,260,0,140)
+frame.Position = UDim2.new(0.5,-130,0.5,-70)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Visible = false
+frame.Parent = gui
+local text = Instance.new("TextLabel")
+text.Size = UDim2.new(1,0,0,40)
+text.BackgroundTransparency = 1
+text.TextColor3 = Color3.new(1,1,1)
+text.TextScaled = true
+text.Text = "Kamu yakin?"
+text.Parent = frame
+local ok = Instance.new("TextButton")
+ok.Size = UDim2.new(0.4,0,0,40)
+ok.Position = UDim2.new(0.1,0,0.6,0)
+ok.Text = "OK"
+ok.Parent = frame
+local no = Instance.new("TextButton")
+no.Size = UDim2.new(0.4,0,0,40)
+no.Position = UDim2.new(0.5,0,0.6,0)
+no.Text = "NO"
+no.Parent = frame
+local throwBtn = Instance.new("TextButton")
+throwBtn.Size = UDim2.new(0,120,0,40)
+throwBtn.Position = UDim2.new(0.5,-60,0.8,0)
+throwBtn.Text = "LEMPAR"
+throwBtn.Visible = false
+throwBtn.Parent = gui
+local info = Instance.new("TextLabel")
+info.Size = UDim2.new(0,200,0,40)
+info.Position = UDim2.new(0.5,-100,0.7,0)
+info.BackgroundTransparency = 0.3
+info.BackgroundColor3 = Color3.fromRGB(0,0,0)
+info.TextColor3 = Color3.new(1,1,1)
+info.TextScaled = true
+info.Visible = false
+info.Parent = gui
+local selectedPlayer
+local function getPlayer(part)
+if part and part.Parent then
+return Players:GetPlayerFromCharacter(part.Parent)
+end
+end
+tool.Activated:Connect(function()
+local plr = getPlayer(mouse.Target)
+if plr and plr ~= player then
+selectedPlayer = plr
+frame.Visible = true
+end
+end)
+-- OK GENDONG
+ok.MouseButton1Click:Connect(function()
+frame.Visible = false
+if selectedPlayer then
+local myChar = player.Character
+local theirChar = selectedPlayer.Character
+if myChar and theirChar then
+local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+local theirRoot = theirChar:FindFirstChild("HumanoidRoo
