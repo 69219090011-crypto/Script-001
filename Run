@@ -1,51 +1,79 @@
 local player = game.Players.LocalPlayer
 
--- สร้าง GUI
+-- ===== GUI =====
 local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 120)
-frame.Position = UDim2.new(0, 50, 0, 200)
+frame.Size = UDim2.new(0,250,0,140)
+frame.Position = UDim2.new(0,20,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.Parent = gui
-
--- ลากได้
 frame.Active = true
 frame.Draggable = true
 
--- ช่องใส่ความเร็ว
-local textbox = Instance.new("TextBox")
-textbox.Size = UDim2.new(1, -20, 0, 30)
-textbox.Position = UDim2.new(0, 10, 0, 10)
-textbox.Text = "16"
-textbox.Parent = frame
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1,0,0,30)
+label.Text = "Speed: 16"
+label.BackgroundTransparency = 1
+label.Parent = frame
 
--- ปุ่มเปิดปิด
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(1, -20, 0, 40)
-button.Position = UDim2.new(0, 10, 0, 60)
-button.Text = "OFF"
-button.Parent = frame
+-- ===== Slider =====
+local slider = Instance.new("Frame")
+slider.Size = UDim2.new(1,-20,0,20)
+slider.Position = UDim2.new(0,10,0,40)
+slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
+slider.Parent = frame
 
-local enabled = false
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0,20,1,0)
+knob.Position = UDim2.new(0,0,0,0)
+knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
+knob.Parent = slider
 
-local function getHumanoid()
-	local char = player.Character or player.CharacterAdded:Wait()
-	return char:WaitForChild("Humanoid")
+local speed = 16
+local dragging = false
+
+knob.InputBegan:Connect(function(input)
+	if input.UserInputType.Name == "MouseButton1" then
+		dragging = true
+	end
+end)
+
+knob.InputEnded:Connect(function(input)
+	if input.UserInputType.Name == "MouseButton1" then
+		dragging = false
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if dragging and input.UserInputType.Name == "MouseMovement" then
+		local x = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X,0,1)
+		knob.Position = UDim2.new(x, -10, 0, 0)
+		
+		speed = math.floor(x * 200) + 16 -- 16-216
+		label.Text = "Speed: "..speed
+		
+		local char = player.Character
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid").WalkSpeed = speed
+		end
+	end
+end)
+
+-- ===== รีตอนเกิดใหม่ =====
+local function applySpeed()
+	local char = player.Character
+	if char then
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum.WalkSpeed = speed
+		end
+	end
 end
 
-button.MouseButton1Click:Connect(function()
-	enabled = not enabled
-	
-	if enabled then
-		button.Text = "ON"
-		local speed = tonumber(textbox.Text)
-		if speed then
-			getHumanoid().WalkSpeed = speed
-		end
-	else
-		button.Text = "OFF"
-		getHumanoid().WalkSpeed = 16
-	end
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	applySpeed()
 end)
