@@ -1,0 +1,60 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Ana Pencere Oluşturma
+local Window = Rayfield:CreateWindow({
+Name = "SB FAKE VR HUB",
+LoadingTitle = "SB187 VR Yükleniyor...",
+LoadingSubtitle = "by SB187",
+ConfigurationSaving = {
+Enabled = false
+},
+KeySystem = true,
+KeySettings = {
+Title = "SB FAKE VR HUB | Key Sistemi",
+Subtitle = "Key Giriniz",
+Note = "Yanlış girersen: Sen sıradan hackersin",
+FileName = "SBKey",
+SaveKey = false,
+GrabKeyFromSite = false,
+Key = {"1234"}
+}
+})
+-- Giriş Başarılı Bildirimi
+Rayfield:Notify({
+Title = "GİRİŞ BAŞARILI",
+Content = "VR HUB BY SB187",
+Duration = 6.5,
+Image = 4483345998,
+})
+-- Sekme Oluşturma
+local MainTab = Window:CreateTab("VR Menü", 4483345998)
+-- İstenen Buton ve Senin Scriptin
+MainTab:CreateButton({
+Name = "FE VR BY SB",
+Callback = function()
+-- SENİN GÖNDERDİĞİN SCRIPT BAŞLANGICI
+local Player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
+local function cleanup()
+if _G.ArmLoop then _G.ArmLoop:Disconnect() end
+local oldGui = Player.PlayerGui:FindFirstChild("AnkaraArmGui")
+if oldGui then oldGui:Destroy() end
+if workspace:FindFirstChild(Player.Name.."_FakeArms") then
+workspace[Player.Name.."_FakeArms"]:Destroy()
+end
+end
+cleanup()
+local ScreenGui = Instance.new("ScreenGui", Player.PlayerGui)
+ScreenGui.Name = "AnkaraArmGui"
+ScreenGui.ResetOnSpawn = true
+local armValues = {Left = Vector2.new(0,0), Right = Vector2.new(0,0)}
+local tenRengi = Color3.fromRGB(255, 204, 153)
+local armFolder = Instance.new("Folder", workspace)
+armFolder.Name = Player.Name.."_FakeArms"
+local function createFakeArm(name)
+local arm = Instance.new("Part", armFolder)
+arm.Name = name
+arm.Size = Vector3.new(1, 2, 1)
+arm.Color = tenRengi
+arm.Material = Enum.Materi
