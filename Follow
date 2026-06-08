@@ -1,0 +1,27 @@
+local player = game.Players.LocalPlayer
+local targetName = "ใส่ชื่อคน" -- เปลี่ยนชื่อ
+
+local function follow()
+	local target = game.Players:FindFirstChild(targetName)
+	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+		
+		local myChar = player.Character
+		if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+			
+			-- ยืนด้านหลัง
+			myChar.HumanoidRootPart.CFrame =
+				target.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
+		end
+	end
+end
+
+-- ตามตลอด
+game:GetService("RunService").RenderStepped:Connect(function()
+	follow()
+end)
+
+-- ตายแล้วตามต่อ
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	follow()
+end)
