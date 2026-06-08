@@ -1,0 +1,67 @@
+local player = game.Players.LocalPlayer
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,230,0,140)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Parent = gui
+frame.Active = true
+frame.Draggable = true
+
+-- ช่องใส่ชื่อ
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1,-20,0,30)
+box.Position = UDim2.new(0,10,0,10)
+box.PlaceholderText = "ใส่ชื่อผู้เล่น"
+box.Parent = frame
+
+-- ปุ่มเปิด/ปิด
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(1,-20,0,40)
+toggleBtn.Position = UDim2.new(0,10,0,50)
+toggleBtn.Text = "FOLLOW: OFF"
+toggleBtn.Parent = frame
+
+local following = false
+local targetName = ""
+
+-- ฟังก์ชันวาร์ป
+local function teleportToTarget()
+	local target = game.Players:FindFirstChild(targetName)
+	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+		local myChar = player.Character
+		if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+			myChar.HumanoidRootPart.CFrame =
+				target.Character.HumanoidRootPart.CFrame * CFrame.new(3,0,3)
+		end
+	end
+end
+
+-- ปุ่มกด
+toggleBtn.MouseButton1Click:Connect(function()
+	targetName = box.Text
+	if targetName == "" then return end
+	
+	following = not following
+	toggleBtn.Text = following and "FOLLOW: ON" or "FOLLOW: OFF"
+end)
+
+-- ติดตาม
+game:GetService("RunService").RenderStepped:Connect(function()
+	if following then
+		teleportToTarget()
+	end
+end)
+
+-- กันรีตอนตาย
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	if following then
+		teleportToTarget()
+	end
+end)
