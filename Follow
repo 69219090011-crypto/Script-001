@@ -108,15 +108,3 @@ end)
 player.CharacterAdded:Connect(function()
 	task.wait(1)
 end)
-
--- ===== ICON เปิด/ปิด (แบบรูป) =====
-local icon = Instance.new("ImageButton")
-icon.Size = UDim2.new(0,50,0,50)
-icon.Position = UDim2.new(0,20,0,150)
-icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
-icon.Parent = gui
-icon.Active = true
-icon.Draggable = true
-
--- ใส่รูปไอคอน (เฟือง)
-icon.Image = "rbxassetid://6031091002"
