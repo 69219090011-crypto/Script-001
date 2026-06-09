@@ -1,0 +1,62 @@
+local player = game.Players.LocalPlayer
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,220,0,120)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Parent = gui
+frame.Active = true
+frame.Draggable = true
+
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,10)
+box.PlaceholderText = "ใส่ขนาด (เช่น 2)"
+box.Parent = frame
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(1,-20,0,40)
+btn.Position = UDim2.new(0,10,0,60)
+btn.Text = "SET SIZE"
+btn.Parent = frame
+
+local currentSize = 1
+
+-- ===== ฟังก์ชันขยาย R6 =====
+local function setSize(scale)
+	local char = player.Character
+	if not char then return end
+	
+	for _,v in pairs(char:GetChildren()) do
+		if v:IsA("BasePart") then
+			v.Size = v.Size * scale
+		end
+	end
+	
+	-- ปรับตำแหน่ง joint
+	for _,v in pairs(char:GetDescendants()) do
+		if v:IsA("Motor6D") then
+			v.C0 = v.C0 * CFrame.new(0,0,0)
+			v.C1 = v.C1 * CFrame.new(0,0,0)
+		end
+	end
+end
+
+btn.MouseButton1Click:Connect(function()
+	local num = tonumber(box.Text)
+	if num then
+		currentSize = num
+		setSize(currentSize)
+	end
+end)
+
+-- กันรีตอนตาย
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	setSize(currentSize)
+end)
