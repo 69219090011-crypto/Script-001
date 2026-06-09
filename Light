@@ -1,0 +1,63 @@
+local player = game.Players.LocalPlayer
+
+-- ===== สร้าง RemoteEvent อัตโนมัติ =====
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local event = ReplicatedStorage:FindFirstChild("GlowEvent")
+
+if not event then
+	event = Instance.new("RemoteEvent")
+	event.Name = "GlowEvent"
+	event.Parent = ReplicatedStorage
+end
+
+-- ===== SERVER (ฝั่งเซิร์ฟ) =====
+if game:GetService("RunService"):IsServer() then
+	event.OnServerEvent:Connect(function(player, brightness)
+		local char = player.Character
+		if not char then return end
+		
+		local root = char:FindFirstChild("HumanoidRootPart")
+		if not root then return end
+		
+		if root:FindFirstChild("GlowLight") then
+			root.GlowLight:Destroy()
+		end
+		
+		local light = Instance.new("PointLight")
+		light.Name = "GlowLight"
+		light.Brightness = brightness
+		light.Range = 30 + brightness
+		light.Parent = root
+	end)
+end
+
+-- ===== CLIENT (GUI) =====
+if game:GetService("RunService"):IsClient() then
+	
+	local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	gui.ResetOnSpawn = false
+
+	local frame = Instance.new("Frame", gui)
+	frame.Size = UDim2.new(0,220,0,120)
+	frame.Position = UDim2.new(0,20,0,200)
+	frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	frame.Active = true
+	frame.Draggable = true
+
+	local box = Instance.new("TextBox", frame)
+	box.Size = UDim2.new(1,-20,0,40)
+	box.Position = UDim2.new(0,10,0,10)
+	box.PlaceholderText = "ใส่ความสว่าง"
+
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(1,-20,0,40)
+	btn.Position = UDim2.new(0,10,0,60)
+	btn.Text = "SET"
+
+	btn.MouseButton1Click:Connect(function()
+		local num = tonumber(box.Text)
+		if num then
+			event:FireServer(num)
+		end
+	end)
+end
