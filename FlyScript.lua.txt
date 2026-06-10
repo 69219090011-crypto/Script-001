@@ -1,0 +1,419 @@
+-- ✈️ FLY SCRIPT by Claude
+-- รองรับ: ปรับความเร็ว | GUI ลากได้ | ไม่หายเมื่อตาย
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- ==================== CONFIG ====================
+local flySpeed = 50        -- ความเร็วเริ่มต้น
+local minSpeed = 10
+local maxSpeed = 500
+local isFlying = false
+local flyConnection = nil
+-- =================================================
+
+-- ==================== GUI ====================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FlyGUI"
+screenGui.ResetOnSpawn = false  -- ✅ ไม่หายเมื่อตาย
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = player.PlayerGui
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 220, 0, 200)
+mainFrame.Position = UDim2.new(0, 20, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+-- Corner radius
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
+
+-- Stroke border
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(80, 120, 255)
+stroke.Thickness = 1.5
+stroke.Parent = mainFrame
+
+-- Title Bar (ใช้ลาก)
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 36)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 50, 120)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = titleBar
+
+-- Fix bottom corners of title bar
+local titleFix = Instance.new("Frame")
+titleFix.Size = UDim2.new(1, 0, 0, 12)
+titleFix.Position = UDim2.new(0, 0, 1, -12)
+titleFix.BackgroundColor3 = Color3.fromRGB(30, 50, 120)
+titleFix.BorderSizePixel = 0
+titleFix.Parent = titleBar
+
+-- Title Text
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "✈️  FLY SCRIPT"
+titleLabel.Size = UDim2.new(1, -10, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Status Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Text = "🔴  ปิดอยู่"
+statusLabel.Size = UDim2.new(1, -20, 0, 24)
+statusLabel.Position = UDim2.new(0, 10, 0, 44)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
+statusLabel.TextSize = 13
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = mainFrame
+
+-- Toggle Button
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Text = "เปิดบิน"
+toggleBtn.Size = UDim2.new(1, -20, 0, 38)
+toggleBtn.Position = UDim2.new(0, 10, 0, 74)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 230)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.TextSize = 14
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleBtn
+
+-- Speed Label
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Text = "ความเร็ว: " .. flySpeed
+speedLabel.Size = UDim2.new(1, -20, 0, 20)
+speedLabel.Position = UDim2.new(0, 10, 0, 124)
+speedLabel.BackgroundTransparency = 1
+speedLabel.TextColor3 = Color3.fromRGB(180, 200, 255)
+speedLabel.TextSize = 12
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+speedLabel.Parent = mainFrame
+
+-- Speed Slider Bar Background
+local sliderBg = Instance.new("Frame")
+sliderBg.Size = UDim2.new(1, -20, 0, 8)
+sliderBg.Position = UDim2.new(0, 10, 0, 152)
+sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+sliderBg.BorderSizePixel = 0
+sliderBg.Parent = mainFrame
+
+local sliderBgCorner = Instance.new("UICorner")
+sliderBgCorner.CornerRadius = UDim.new(1, 0)
+sliderBgCorner.Parent = sliderBg
+
+-- Speed Slider Fill
+local sliderFill = Instance.new("Frame")
+sliderFill.Size = UDim2.new((flySpeed - minSpeed) / (maxSpeed - minSpeed), 0, 1, 0)
+sliderFill.BackgroundColor3 = Color3.fromRGB(80, 130, 255)
+sliderFill.BorderSizePixel = 0
+sliderFill.Parent = sliderBg
+
+local fillCorner = Instance.new("UICorner")
+fillCorner.CornerRadius = UDim.new(1, 0)
+fillCorner.Parent = sliderFill
+
+-- Slider Knob
+local knob = Instance.new("Frame")
+knob.Size = UDim2.new(0, 16, 0, 16)
+knob.AnchorPoint = Vector2.new(0.5, 0.5)
+local kRatio = (flySpeed - minSpeed) / (maxSpeed - minSpeed)
+knob.Position = UDim2.new(kRatio, 10, 0.5, 0)  -- offset=10 margin
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+knob.ZIndex = 5
+knob.Parent = sliderBg
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = knob
+
+-- Speed Buttons (- and +)
+local minusBtn = Instance.new("TextButton")
+minusBtn.Text = "−"
+minusBtn.Size = UDim2.new(0, 32, 0, 28)
+minusBtn.Position = UDim2.new(0, 10, 0, 165)
+minusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
+minusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minusBtn.TextSize = 16
+minusBtn.Font = Enum.Font.GothamBold
+minusBtn.BorderSizePixel = 0
+minusBtn.Parent = mainFrame
+Instance.new("UICorner", minusBtn).CornerRadius = UDim.new(0, 6)
+
+local plusBtn = Instance.new("TextButton")
+plusBtn.Text = "+"
+plusBtn.Size = UDim2.new(0, 32, 0, 28)
+plusBtn.Position = UDim2.new(1, -42, 0, 165)
+plusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
+plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+plusBtn.TextSize = 16
+plusBtn.Font = Enum.Font.GothamBold
+plusBtn.BorderSizePixel = 0
+plusBtn.Parent = mainFrame
+Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+
+-- ==================== HELPER FUNCTIONS ====================
+
+local function updateSpeedUI()
+    speedLabel.Text = "ความเร็ว: " .. math.floor(flySpeed)
+    local ratio = (flySpeed - minSpeed) / (maxSpeed - minSpeed)
+    sliderFill.Size = UDim2.new(ratio, 0, 1, 0)
+    knob.Position = UDim2.new(ratio, 0, 0.5, 0)
+end
+
+local function setFlying(state)
+    isFlying = state
+    if isFlying then
+        statusLabel.Text = "🟢  กำลังบิน"
+        toggleBtn.Text = "ปิดบิน"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 60)
+    else
+        statusLabel.Text = "🔴  ปิดอยู่"
+        toggleBtn.Text = "เปิดบิน"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 230)
+    end
+end
+
+-- ==================== FLY LOGIC ====================
+
+local function startFly(character)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not rootPart then return end
+
+    humanoid.PlatformStand = true
+
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.zero
+    bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bodyVelocity.Parent = rootPart
+
+    local bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    bodyGyro.D = 100
+    bodyGyro.Parent = rootPart
+
+    if flyConnection then flyConnection:Disconnect() end
+
+    flyConnection = RunService.Heartbeat:Connect(function()
+        if not isFlying then
+            bodyVelocity:Destroy()
+            bodyGyro:Destroy()
+            humanoid.PlatformStand = false
+            flyConnection:Disconnect()
+            flyConnection = nil
+            return
+        end
+
+        local moveDir = Vector3.zero
+        local camCF = camera.CFrame
+
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDir = moveDir + camCF.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDir = moveDir - camCF.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDir = moveDir - camCF.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDir = moveDir + camCF.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDir = moveDir + Vector3.new(0, 1, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDir = moveDir - Vector3.new(0, 1, 0)
+        end
+
+        if moveDir.Magnitude > 0 then
+            bodyVelocity.Velocity = moveDir.Unit * flySpeed
+        else
+            bodyVelocity.Velocity = Vector3.zero
+        end
+
+        bodyGyro.CFrame = camCF
+    end)
+end
+
+local function stopFly()
+    isFlying = false
+    setFlying(false)
+    if flyConnection then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoid then humanoid.PlatformStand = false end
+        if rootPart then
+            local bv = rootPart:FindFirstChildOfClass("BodyVelocity")
+            local bg = rootPart:FindFirstChildOfClass("BodyGyro")
+            if bv then bv:Destroy() end
+            if bg then bg:Destroy() end
+        end
+    end
+end
+
+-- ==================== TOGGLE BUTTON ====================
+
+toggleBtn.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if not character then return end
+
+    isFlying = not isFlying
+    setFlying(isFlying)
+
+    if isFlying then
+        startFly(character)
+    else
+        stopFly()
+    end
+end)
+
+-- ==================== SPEED BUTTONS ====================
+
+plusBtn.MouseButton1Click:Connect(function()
+    flySpeed = math.min(flySpeed + 10, maxSpeed)
+    updateSpeedUI()
+end)
+
+minusBtn.MouseButton1Click:Connect(function()
+    flySpeed = math.max(flySpeed - 10, minSpeed)
+    updateSpeedUI()
+end)
+
+-- ==================== SLIDER DRAG ====================
+
+local sliderDragging = false
+
+sliderBg.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        sliderDragging = true
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                           input.UserInputType == Enum.UserInputType.Touch) then
+        local sliderPos = sliderBg.AbsolutePosition.X
+        local sliderWidth = sliderBg.AbsoluteSize.X
+        local mouseX = input.Position.X
+        local ratio = math.clamp((mouseX - sliderPos) / sliderWidth, 0, 1)
+        flySpeed = minSpeed + ratio * (maxSpeed - minSpeed)
+        updateSpeedUI()
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        sliderDragging = false
+    end
+end)
+
+-- ==================== GUI DRAG ====================
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- ==================== RESPAWN HANDLER ====================
+-- ✅ เมื่อ spawn ใหม่ ถ้าบินอยู่ให้บินต่อ
+
+player.CharacterAdded:Connect(function(character)
+    -- รอ character โหลดเสร็จ
+    character:WaitForChild("HumanoidRootPart")
+    character:WaitForChild("Humanoid")
+    wait(0.5)
+
+    if isFlying then
+        startFly(character)
+    end
+end)
+
+-- ==================== KEYBIND (F = toggle) ====================
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        toggleBtn:FireEvent("MouseButton1Click")
+        -- trigger click manually
+        local character = player.Character
+        if not character then return end
+        isFlying = not isFlying
+        setFlying(isFlying)
+        if isFlying then
+            startFly(character)
+        else
+            stopFly()
+        end
+    end
+end)
+
+print("✈️ Fly Script โหลดสำเร็จ! กด F หรือกดปุ่มในหน้าต่างเพื่อเปิด/ปิดบิน")
+print("WASD = เคลื่อนที่ | Space = ขึ้น | Ctrl = ลง")
