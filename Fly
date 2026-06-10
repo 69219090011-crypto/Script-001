@@ -1,0 +1,115 @@
+local player = game.Players.LocalPlayer
+local flying = false
+local speed = 50
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,160)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,10)
+box.PlaceholderText = "ใส่ความเร็ว"
+
+local toggle = Instance.new("TextButton", frame)
+toggle.Size = UDim2.new(1,-20,0,40)
+toggle.Position = UDim2.new(0,10,0,60)
+toggle.Text = "FLY: OFF"
+
+local close = Instance.new("TextButton", frame)
+close.Size = UDim2.new(1,-20,0,30)
+close.Position = UDim2.new(0,10,0,110)
+close.Text = "ปิด/เปิด GUI"
+
+-- ===== ระบบบิน =====
+local bodyVel, bodyGyro
+
+local function startFly()
+	local char = player.Character
+	if not char then return end
+	
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	
+	bodyVel = Instance.new("BodyVelocity")
+	bodyVel.MaxForce = Vector3.new(999999,999999,999999)
+	bodyVel.Parent = root
+	
+	bodyGyro = Instance.new("BodyGyro")
+	bodyGyro.MaxTorque = Vector3.new(999999,999999,999999)
+	bodyGyro.CFrame = root.CFrame
+	bodyGyro.Parent = root
+end
+
+local function stopFly()
+	if bodyVel then bodyVel:Destroy() end
+	if bodyGyro then bodyGyro:Destroy() end
+end
+
+-- ปุ่มเปิด/ปิดบิน
+toggle.MouseButton1Click:Connect(function()
+	flying = not flying
+	
+	if flying then
+		toggle.Text = "FLY: ON"
+		startFly()
+	else
+		toggle.Text = "FLY: OFF"
+		stopFly()
+	end
+end)
+
+-- ปุ่มปิด/เปิด GUI
+local guiVisible = true
+close.MouseButton1Click:Connect(function()
+	guiVisible = not guiVisible
+	frame.Visible = guiVisible
+end)
+
+-- ใส่ความเร็ว
+box.FocusLost:Connect(function()
+	local num = tonumber(box.Text)
+	if num then
+		speed = num
+	end
+end)
+
+-- ควบคุมบิน
+local UIS = game:GetService("UserInputService")
+
+game:GetService("RunService").RenderStepped:Connect(function()
+	if flying and bodyVel then
+		local cam = workspace.CurrentCamera
+		local move = Vector3.new()
+
+		if UIS:IsKeyDown(Enum.KeyCode.W) then
+			move = move + cam.CFrame.LookVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then
+			move = move - cam.CFrame.LookVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then
+			move = move - cam.CFrame.RightVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then
+			move = move + cam.CFrame.RightVector
+		end
+
+		bodyVel.Velocity = move * speed
+	end
+end)
+
+-- กันตายแล้วหาย
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	if flying then
+		startFly()
+	end
+end)
