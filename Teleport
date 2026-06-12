@@ -1,0 +1,49 @@
+local player = game.Players.LocalPlayer
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,140)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(1,-20,0,40)
+box.Position = UDim2.new(0,10,0,10)
+box.PlaceholderText = "ใส่ชื่อคน"
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(1,-20,0,40)
+btn.Position = UDim2.new(0,10,0,60)
+btn.Text = "TELEPORT"
+
+local close = Instance.new("TextButton", frame)
+close.Size = UDim2.new(1,-20,0,30)
+close.Position = UDim2.new(0,10,0,110)
+close.Text = "ปิด/เปิด GUI"
+
+-- ===== วาร์ป =====
+btn.MouseButton1Click:Connect(function()
+	local name = box.Text
+	local target = game.Players:FindFirstChild(name)
+	
+	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+		local myChar = player.Character
+		if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+			
+			myChar.HumanoidRootPart.CFrame =
+				target.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
+		end
+	end
+end)
+
+-- ===== ปิด/เปิด GUI =====
+local visible = true
+close.MouseButton1Click:Connect(function()
+	visible = not visible
+	frame.Visible = visible
+end)
