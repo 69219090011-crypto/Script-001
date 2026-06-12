@@ -1,0 +1,46 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,180,0,80)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(1,-20,1,-20)
+btn.Position = UDim2.new(0,10,0,10)
+btn.Text = "TP: OFF"
+
+-- ===== TP =====
+local enabled = false
+
+btn.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	
+	if enabled then
+		btn.Text = "TP: ON"
+	else
+		btn.Text = "TP: OFF"
+	end
+end)
+
+mouse.Button1Down:Connect(function()
+	if not enabled then return end
+	
+	local char = player.Character
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		local pos = mouse.Hit.Position
+		char.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
+	end
+end)
+
+-- ===== ตายแล้วไม่หาย =====
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+end)
