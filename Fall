@@ -1,0 +1,91 @@
+local player = game.Players.LocalPlayer
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,160)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local floatBtn = Instance.new("TextButton", frame)
+floatBtn.Size = UDim2.new(1,-20,0,40)
+floatBtn.Position = UDim2.new(0,10,0,10)
+floatBtn.Text = "FLOAT: OFF"
+
+local ragdollBtn = Instance.new("TextButton", frame)
+ragdollBtn.Size = UDim2.new(1,-20,0,40)
+ragdollBtn.Position = UDim2.new(0,10,0,60)
+ragdollBtn.Text = "RAGDOLL: OFF"
+
+-- ===== FLOAT =====
+local floating = false
+local bodyVel
+
+local function startFloat()
+	local char = player.Character
+	if not char then return end
+	
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	
+	bodyVel = Instance.new("BodyVelocity")
+	bodyVel.MaxForce = Vector3.new(0,999999,0)
+	bodyVel.Velocity = Vector3.new(0,5,0)
+	bodyVel.Parent = root
+end
+
+local function stopFloat()
+	if bodyVel then bodyVel:Destroy() end
+end
+
+floatBtn.MouseButton1Click:Connect(function()
+	floating = not floating
+	
+	if floating then
+		floatBtn.Text = "FLOAT: ON"
+		startFloat()
+	else
+		floatBtn.Text = "FLOAT: OFF"
+		stopFloat()
+	end
+end)
+
+-- ===== RAGDOLL =====
+local ragdoll = false
+
+local function setRagdoll(char, state)
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+	
+	if state then
+		hum:ChangeState(Enum.HumanoidStateType.Physics)
+	else
+		hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+	end
+end
+
+ragdollBtn.MouseButton1Click:Connect(function()
+	ragdoll = not ragdoll
+	
+	local char = player.Character
+	if char then
+		setRagdoll(char, ragdoll)
+	end
+	
+	if ragdoll then
+		ragdollBtn.Text = "RAGDOLL: ON"
+	else
+		ragdollBtn.Text = "RAGDOLL: OFF"
+	end
+end)
+
+-- ===== ตายแล้วไม่หาย =====
+player.CharacterAdded:Connect(function(char)
+	task.wait(1)
+	if floating then startFloat() end
+	if ragdoll then setRagdoll(char, true) end
+end)
