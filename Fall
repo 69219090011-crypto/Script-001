@@ -1,0 +1,66 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+local floating = false
+local ragdoll = false
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,220,0,150)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local floatBtn = Instance.new("TextButton", frame)
+floatBtn.Size = UDim2.new(1,-20,0,40)
+floatBtn.Position = UDim2.new(0,10,0,10)
+floatBtn.Text = "FLOAT: OFF"
+
+local ragBtn = Instance.new("TextButton", frame)
+ragBtn.Size = UDim2.new(1,-20,0,40)
+ragBtn.Position = UDim2.new(0,10,0,60)
+ragBtn.Text = "RAGDOLL: OFF"
+
+-- ===== FLOAT (ลอย) =====
+local bodyVel
+
+local function startFloat()
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	
+	bodyVel = Instance.new("BodyVelocity")
+	bodyVel.MaxForce = Vector3.new(999999,999999,999999)
+	bodyVel.Velocity = Vector3.new(0,0,0)
+	bodyVel.Parent = root
+end
+
+local function stopFloat()
+	if bodyVel then bodyVel:Destroy() end
+end
+
+floatBtn.MouseButton1Click:Connect(function()
+	floating = not floating
+	
+	if floating then
+		floatBtn.Text = "FLOAT: ON"
+		startFloat()
+	else
+		floatBtn.Text = "FLOAT: OFF"
+		stopFloat()
+	end
+end)
+
+-- ควบคุมลอย (WASD)
+local UIS = game:GetService("UserInputService")
+game:GetService("RunService").RenderStepped:Connect(function()
+	if floating and bodyVel then
+		local cam = workspace.CurrentCamera
+		local move = Vector3.new()
+
+		if UIS:IsKeyDown(Enum.KeyCode.W) then
+			move += cam.CFrame.LookVector
+		end
