@@ -1,0 +1,63 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+-- ✅ Интерфейс
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MiniModeGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = game:GetService("CoreGui")
+-- 📦 Основной фрейм
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 240, 0, 120)
+mainFrame.Position = UDim2.new(0.5, -120, 0.8, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+-- 🔘 Скруглённые углы
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 16)
+corner.Parent = mainFrame
+-- 🌿 Заголовок
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "Small avatar changer"
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.Parent = mainFrame
+-- ❌ Круглая красная кнопка закрытия
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 24, 0, 24)
+closeButton.Position = UDim2.new(1, -28, 0, 6)
+closeButton.Text = "X"
+closeButton.TextScaled = true
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.BorderSizePixel = 0
+closeButton.ZIndex = 2
+closeButton.Parent = mainFrame
+-- Круглая форма
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeButton
+-- Кнопка "Муравей / Норма"
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -20, 0, 40)
+button.Position = UDim2.new(0, 10, 0, 50)
+button.Text = "Enable"
+button.TextScaled = true
+button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.BorderSizePixel = 0
+button.Parent = mainFrame
+-- Скругление кнопки
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 12)
+btnCorner.Parent = button
+-- 🌈 Радужная анима
