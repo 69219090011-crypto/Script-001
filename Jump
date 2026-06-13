@@ -1,0 +1,45 @@
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,180,0,80)
+frame.Position = UDim2.new(0,20,0,200)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Active = true
+frame.Draggable = true
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(1,-20,1,-20)
+btn.Position = UDim2.new(0,10,0,10)
+btn.Text = "INF JUMP: OFF"
+
+-- ===== INF JUMP =====
+local enabled = false
+
+btn.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	
+	if enabled then
+		btn.Text = "INF JUMP: ON"
+	else
+		btn.Text = "INF JUMP: OFF"
+	end
+end)
+
+UIS.JumpRequest:Connect(function()
+	if enabled then
+		local char = player.Character
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end
+end)
+
+-- ===== ตายแล้วไม่หาย =====
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+end)
